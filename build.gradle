@@ -18,12 +18,65 @@ dependencies {
 
 }
 
+//  1
 jar {
     manifest {
         attributes 'Main-Class': 'org.example.Main'
     }
     from configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
 }
+
+//  2
+tasks.register("removeFolder") {
+    delete 'dist'
+
+    doLast {
+        System.out.println("Folder DIST successufuly deleted!");
+    }
+}
+
+//  3
+tasks.register("createFolder") {
+    doFirst {
+        System.out.println("Start to create folder DIST");
+    }
+
+    mkdir 'dist'
+
+    doLast {
+        System.out.println("Folder DIST seccessufuly created!");
+    }
+}
+
+//  4
+task copySource(type: Copy) {
+    from 'source.txt'
+    into 'dist'
+
+    doLast {
+        System.out.println("source.txt copy into DIST")
+    }
+}
+
+//  5
+task copyJar(type: Copy) {
+    from 'build/libs/javaDev-module-1-gradle-1.0-SNAPSHOT.jar'
+    into 'dist'
+    rename 'javaDev-module-1-gradle-1.0-SNAPSHOT.jar', 'myname.jar'
+}
+
+//  6
+task runWithExecJarExecuyetable(type: Exec) {
+    group = "Execution"
+    description = "Run the output executable jar with ExecTask"
+    commandLine "java", "-jar", "dist/myname.jar"
+}
+
+removeFolder.dependsOn(jar)
+createFolder.dependsOn(removeFolder)
+copySource.dependsOn(createFolder)
+copyJar.dependsOn(copySource)
+runWithExecJarExecuyetable.dependsOn(copyJar)
 
 test {
     useJUnitPlatform()
